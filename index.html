@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Text Circle</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .text {
+            position: absolute;
+            white-space: nowrap;
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Ensure text elements stack properly */
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const textList = [
+            "AMOGUS",
+            "chomik",
+            "REMEMBER BOB THE STICKMAN",
+            "Jeremy the Sniffer",
+            "Beep Beep, I'm a Sheep",
+            "Sorry your free trial of communism has ended",
+            "I'M PEEING ON THE SEAT! GIVE ME A RAISE!",
+            "Are you kidding me? Nothing gets past my bow!",
+            "NANI?!",
+            "It's over 9000!",
+            "Do a barrel roll!",
+            "Jimmy the Worm",
+            "D'oh!",
+            "Creeper? Aw man!",
+            "Oof!",
+            "Burger Attack! Burger Attack! BURGER BLAST",
+            "Let’s Go Gambling!",
+            "Let’s Be Financially Responsible!",
+            "Peter Cast Fireball",
+            "This is Kyle the Alien, um, if he doesn’t like you he’ll turn you into an orb"
+        ];
+
+        const specialMessages = [
+            { month: 11, day: 25, text: "Merry Christmas!" },
+            { month: 9, day: 31, text: "Spooky Scary Skeletons" },
+            { month: 6, day: 4, text: "WTF IS A KILOMETER? 🇺🇸🇺🇸🇺🇸🦅🦅🦅" },
+            { month: 3, day: 1, text: "April Fools!" }
+        ];
+
+        const body = document.body;
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const radius = Math.min(window.innerWidth, window.innerHeight) / 3;
+        const angleStep = (2 * Math.PI) / textList.length;
+        const textMargin = 20; // Margin around text to prevent overlap
+        let currentAngle = Math.random() * 2 * Math.PI;
+
+        textList.forEach(text => {
+            let x, y, collision;
+            do {
+                const angleOffset = Math.random() * Math.PI / 4; // Random angle offset to prevent uniform clustering
+                x = centerX + radius * Math.cos(currentAngle + angleOffset);
+                y = centerY + radius * Math.sin(currentAngle + angleOffset);
+                collision = false;
+
+                // Check collision with existing text elements
+                body.querySelectorAll('.text').forEach(existingText => {
+                    const rect1 = existingText.getBoundingClientRect();
+                    const rect2 = { left: x - rect1.width / 2 - textMargin, top: y - rect1.height / 2 - textMargin, right: x + rect1.width / 2 + textMargin, bottom: y + rect1.height / 2 + textMargin };
+
+                    if (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom)) {
+                        collision = true;
+                        return;
+                    }
+                });
+
+                if (!collision) {
+                    break;
+                }
+
+                currentAngle += angleStep;
+            } while (true);
+
+            const div = document.createElement('div');
+            div.classList.add('text');
+            div.textContent = text;
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
+            body.appendChild(div);
+
+            currentAngle += angleStep;
+        });
+
+        // Add special messages based on the current date
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentDate = today.getDate();
+
+        specialMessages.forEach(message => {
+            if (currentMonth === message.month && currentDate === message.day) {
+                const div = document.createElement('div');
+                div.classList.add('text');
+                div.textContent = message.text;
+                div.style.left = `${centerX}px`;
+                div.style.top = `${centerY}px`;
+                body.appendChild(div);
+            }
+        });
+    </script>
+</body>
+</html>
