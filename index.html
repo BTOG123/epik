@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Text Circle</title>
+    <title>Random Text Positions</title>
     <style>
         body {
             background-color: #121212;
@@ -12,19 +12,16 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            min-width: 100vw;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            position: relative;
+            flex-direction: column;
         }
 
         .text {
             position: absolute;
             white-space: nowrap;
-            transform: translate(-50%, -50%);
-            z-index: 1; /* Ensure text elements stack properly */
+            z-index: 1;
         }
     </style>
 </head>
@@ -61,47 +58,57 @@
         ];
 
         const body = document.body;
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const radius = Math.min(window.innerWidth, window.innerHeight) / 3;
-        const angleStep = (2 * Math.PI) / textList.length;
         const textMargin = 20; // Margin around text to prevent overlap
-        let currentAngle = Math.random() * 2 * Math.PI;
+
+        function getRandomPosition(width, height) {
+            const x = Math.random() * (window.innerWidth - width - textMargin * 2) + textMargin;
+            const y = Math.random() * (window.innerHeight - height - textMargin * 2) + textMargin;
+            return { x, y };
+        }
+
+        function checkCollision(newRect, existingRects) {
+            for (const existingRect of existingRects) {
+                if (!(newRect.right < existingRect.left ||
+                      newRect.left > existingRect.right ||
+                      newRect.bottom < existingRect.top ||
+                      newRect.top > existingRect.bottom)) {
+                    return true; // Collision detected
+                }
+            }
+            return false; // No collision
+        }
+
+        let existingRects = [];
 
         textList.forEach(text => {
-            let x, y, collision;
-            do {
-                const angleOffset = Math.random() * Math.PI / 4; // Random angle offset to prevent uniform clustering
-                x = centerX + radius * Math.cos(currentAngle + angleOffset);
-                y = centerY + radius * Math.sin(currentAngle + angleOffset);
-                collision = false;
-
-                // Check collision with existing text elements
-                body.querySelectorAll('.text').forEach(existingText => {
-                    const rect1 = existingText.getBoundingClientRect();
-                    const rect2 = { left: x - rect1.width / 2 - textMargin, top: y - rect1.height / 2 - textMargin, right: x + rect1.width / 2 + textMargin, bottom: y + rect1.height / 2 + textMargin };
-
-                    if (!(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom)) {
-                        collision = true;
-                        return;
-                    }
-                });
-
-                if (!collision) {
-                    break;
-                }
-
-                currentAngle += angleStep;
-            } while (true);
-
             const div = document.createElement('div');
             div.classList.add('text');
             div.textContent = text;
-            div.style.left = `${x}px`;
-            div.style.top = `${y}px`;
             body.appendChild(div);
 
-            currentAngle += angleStep;
+            const rect = div.getBoundingClientRect();
+            let position, collision;
+            do {
+                position = getRandomPosition(rect.width, rect.height);
+                const newRect = {
+                    left: position.x - textMargin,
+                    top: position.y - textMargin,
+                    right: position.x + rect.width + textMargin,
+                    bottom: position.y + rect.height + textMargin
+                };
+
+                collision = checkCollision(newRect, existingRects);
+            } while (collision);
+
+            div.style.left = `${position.x}px`;
+            div.style.top = `${position.y}px`;
+
+            existingRects.push({
+                left: position.x,
+                top: position.y,
+                right: position.x + rect.width,
+                bottom: position.y + rect.height
+            });
         });
 
         // Add special messages based on the current date
@@ -114,9 +121,31 @@
                 const div = document.createElement('div');
                 div.classList.add('text');
                 div.textContent = message.text;
-                div.style.left = `${centerX}px`;
-                div.style.top = `${centerY}px`;
                 body.appendChild(div);
+
+                const rect = div.getBoundingClientRect();
+                let position, collision;
+                do {
+                    position = getRandomPosition(rect.width, rect.height);
+                    const newRect = {
+                        left: position.x - textMargin,
+                        top: position.y - textMargin,
+                        right: position.x + rect.width + textMargin,
+                        bottom: position.y + rect.height + textMargin
+                    };
+
+                    collision = checkCollision(newRect, existingRects);
+                } while (collision);
+
+                div.style.left = `${position.x}px`;
+                div.style.top = `${position.y}px`;
+
+                existingRects.push({
+                    left: position.x,
+                    top: position.y,
+                    right: position.x + rect.width,
+                    bottom: position.y + rect.height
+                });
             }
         });
     </script>
